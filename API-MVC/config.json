@@ -1,0 +1,202 @@
+{
+  "Https": 0,
+  "config": [
+    {
+      "IsMobile": 1,
+      "clientId": "HRMMOBILE",
+      "functionListName": [
+        {
+          "FunctionName": "Login",
+          "StoreProceduceName": "SP_API__Users_Login",
+          "IsParamInputList": 0,
+          "ParamIn": [
+            {
+              "ParamName": "UserName",
+              "IsHidden": 0,
+              "LocalName": "P_USERNAME"
+            },
+            {
+              "ParamName": "Password",
+              "IsHidden": 0,
+              "LocalName": "P_PASSWORD"
+            },
+            {
+              "ParamName": "DeviceID",
+              "IsHidden": 0,
+              "LocalName": "P_DEVICE_ID"
+            }
+          ],
+          "ParamOut": [
+            {
+              "LocalName": "P_EMPLOYEE_ID",
+              "LocalValue": "OUT_NUMBER"
+            },
+            {
+              "LocalName": "P_EMPLOYEE_CODE",
+              "LocalValue": "OUT_STRING"
+            },
+            {
+              "LocalName": "P_MESSAGE",
+              "LocalValue": "OUT_STRING"
+            },
+            {
+              "LocalName": "P_RESPONSESTATUS",
+              "LocalValue": "OUT_NUMBER"
+            }
+          ]
+        },
+        {
+          "FunctionName": "CreateToken",
+          "StoreProceduceName": "CreateToken",
+          "IsParamInputList": 0,
+          "ParamIn": [
+            {
+              "ParamName": "ClientID",
+              "IsHidden": 1,
+              "LocalName": "P_CLIENT_ID"
+            },
+            {
+              "ParamName": "Username",
+              "IsHidden": 1,
+              "LocalName": "P_USERNAME"
+            },
+            {
+              "ParamName": "Password",
+              "IsHidden": 1,
+              "LocalName": "P_PASSWORD"
+            }
+          ],
+          "ParamOut": []
+        },
+        {
+          "FunctionName": "Test",
+          "StoreProceduceName": "SP_API__TEST",
+          "IsParamInputList": 0,
+          "ParamIn": [
+            {
+              "ParamName": "EMPLOYEE_ID",
+              "IsHidden": 1,
+              "LocalName": "P_EMPLOYEE_ID"
+            }
+          ],
+          "ParamOut": [
+            {
+              "LocalName": "P_CUR",
+              "LocalValue": "OUT_CURSOR"
+            },
+            {
+              "LocalName": "P_CUR1",
+              "LocalValue": "OUT_CURSOR"
+            },
+            {
+              "LocalName": "P_CUR2",
+              "LocalValue": "OUT_CURSOR"
+            },
+            {
+              "LocalName": "P_MESSAGE",
+              "LocalValue": "OUT_STRING"
+            },
+            {
+              "LocalName": "P_RESPONSESTATUS",
+              "LocalValue": "OUT_NUMBER"
+            }
+          ]
+        },
+        {
+          "FunctionName": "Test2",
+          "StoreProceduceName": "SP_API__TEST2",
+          "IsParamInputList": 0,
+          "ParamIn": [
+            {
+              "ParamName": "EMPLOYEE_ID",
+              "IsHidden": 1,
+              "LocalName": "P_EMPLOYEE_ID"
+            }
+          ],
+          "ParamOut": [
+            {
+              "LocalName": "P_MESSAGE",
+              "LocalValue": "OUT_STRING"
+            },
+            {
+              "LocalName": "P_RESPONSESTATUS",
+              "LocalValue": "OUT_NUMBER"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "username": "AdminSwipeMachine",
+      "password": "twpXf9s0HjfJUx6XAUN+JQ==",
+      "clientId": "SwipeMachine",
+      "clientListIP": [
+        {
+          "IPAddress": "*"
+        }
+      ],
+      "functionListName": [
+        {
+          "FunctionName": "SwipeMachine_Insert",
+          "StoreProceduceName": "SP_API__AT_SwipeMachine_Insert",
+          "IsParamInputList": 0,
+          "ParamIn": [
+            {
+              "ParamName": "TIMEID",
+              "IsHidden": 0,
+              "LocalName": "P_TIMEID"
+            },
+            {
+              "ParamName": "AT_SWIPEMACHINE_ID",
+              "IsHidden": 0,
+              "LocalName": "P_AT_SWIPEMACHINE_ID"
+            },
+            {
+              "ParamName": "HOURDAY",
+              "IsHidden": 0,
+              "LocalName": "P_HOURDAY"
+            }
+          ],
+          "ParamOut": [
+            {
+              "LocalName": "P_ROWCOUNT",
+              "LocalValue": "OUT_NUMBER"
+            },
+            {
+              "LocalName": "P_MESSAGE",
+              "LocalValue": "OUT_STRING"
+            },
+            {
+              "LocalName": "P_RESPONSESTATUS",
+              "LocalValue": "OUT_NUMBER"
+            }
+          ]
+        },
+        {
+          "FunctionName": "SwipeMachine_Getlist",
+          "StoreProceduceName": "SP_API__AT_SwipeMachine_List",
+          "IsParamInputList": 0,
+          "ParamIn": [],
+          "ParamOut": [
+            {
+              "LocalName": "P_CUR",
+              "LocalValue": "OUT_CURSOR"
+            },
+            {
+              "LocalName": "P_CUR1",
+              "LocalValue": "OUT_CURSOR"
+            },
+            {
+              "LocalName": "P_MESSAGE",
+              "LocalValue": "OUT_STRING"
+            },
+            {
+              "LocalName": "P_RESPONSESTATUS",
+              "LocalValue": "OUT_NUMBER"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
