@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.JSInterop;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace API_MVC.Controllers
 {
     
     public class APIController : Controller
     {
+        private const string ClientID = "HRMMOBILE";
         private IMemoryCache _cache;
+
         public APIController (IMemoryCache cache)
         {
             _cache = cache;
@@ -24,7 +28,7 @@ namespace API_MVC.Controllers
         {
             var task = await Task.Run(() =>
             {
-                dynamic d; string clientContentType; string clientAccept;
+                dynamic d = null; string clientContentType; string clientAccept; string ClientToken = ""; dynamic token = null;
                 int httpStatusCode = 200;  int ResponseCode = 1; string ResponseMessage = "Truy vấn API thành công"; string Data = "null";                
                 string taskReturn;
                 d = GetConfig();
@@ -32,7 +36,93 @@ namespace API_MVC.Controllers
                 {
                     ResponseCode = -99;
                     ResponseMessage = "Lỗi file config API";
-
+                }
+                else
+                {
+                    if (d.Https.ToString() == "1" && !Request.IsHttps)
+                    {
+                        ResponseCode = -600;
+                        ResponseMessage = "Hệ thống yêu cầu SSL";
+                    }
+                    else
+                    {
+                        if(Request.Method != "POST")
+                        {
+                            ResponseCode = -600;
+                            ResponseMessage = "Hệ thống yêu cầu phương thức POST";
+                        }
+                        else
+                        {
+                            clientContentType = Request.Headers["Content-Type"];
+                            clientAccept = Request.Headers["Accept"];
+                            if (clientAccept.ToLower() != "application/json")
+                            {
+                                ResponseCode = -600;
+                                ResponseMessage = "Hệ thống yêu cầu Accept: application/json";
+                            }
+                            else
+                            {
+                                if (clientContentType.ToLower() != "application/json")
+                                {
+                                    ResponseCode = -600;
+                                    ResponseMessage = "Hệ thống yêu cầu Content-Type: application/json";
+                                }
+                                else
+                                {
+                                    int i = 0; bool kt = false;
+                                    while (i < d.config.Count && !kt)
+                                    {
+                                        if (d.config.clientId.ToString().ToUpper() == ClientID.ToUpper()) kt = true;
+                                        i = i + 1;
+                                    }
+                                    if (kt)
+                                    {
+                                        i = i - 1; kt = false;
+                                        string StoreName = ""; int j = 0;
+                                        dynamic d1 = d.config[i].functionListName;
+                                        while (j < d1.Count && !kt)
+                                        {
+                                            if (d1.FunctionName.ToString().ToUpper() == functionName.ToUpper()) kt = true;
+                                            j = j + 1;
+                                        }
+                                        if (kt)
+                                        {
+                                            if (functionName.ToUpper() != "LOGIN")
+                                            {
+                                                ClientToken = Request.Headers["Authorization"];
+                                                try
+                                                {
+                                                    token = JsonConvert.DeserializeObject<dynamic>(ClientToken);
+                                                    // Thực hiện call nghiệp vụ với token nhận được
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    ResponseCode = -600;
+                                                    ResponseMessage = "Token không hợp lệ";
+                                                    kt = false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // Thực hiện call Login
+                                                token = null;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ResponseCode = -600;
+                                            ResponseMessage = "Hệ thống không tìm được nghiệp vụ: " + functionName;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ResponseCode = -600;
+                                        ResponseMessage = "Hệ thống không tìm được ClientID";
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 taskReturn = httpStatusCode.ToString () + "^{\"Status\": " + ResponseCode + ", \"Message\": \"" + ResponseMessage + "\", \"Data\": " + Data + "}";
                 return taskReturn; 
