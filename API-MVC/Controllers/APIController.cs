@@ -9,6 +9,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.JSInterop;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using API_MVC.Class;
 
 namespace API_MVC.Controllers
 {
@@ -26,10 +27,10 @@ namespace API_MVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Mobile(string functionName)
         {
-            var task = await Task.Run(() =>
+            var task = await Task.Run(async () =>
             {
-                dynamic d = null; string clientContentType; string clientAccept; string ClientToken = ""; dynamic token = null;
-                int httpStatusCode = 200;  int ResponseCode = 1; string ResponseMessage = "Truy vấn API thành công"; string Data = "null";                
+                dynamic d = null; string clientContentType; string clientAccept; string token = "";
+                int httpStatusCode = 404;  int ResponseCode = -600; string ResponseMessage = "Truy vấn API thất bại"; string Data = "";                
                 string taskReturn;
                 d = GetConfig();
                 if (d == null)
@@ -72,7 +73,7 @@ namespace API_MVC.Controllers
                                     int i = 0; bool kt = false;
                                     while (i < d.config.Count && !kt)
                                     {
-                                        if (d.config.clientId.ToString().ToUpper() == ClientID.ToUpper()) kt = true;
+                                        if (d.config[i].clientId.ToString().ToUpper() == ClientID.ToUpper()) kt = true;
                                         i = i + 1;
                                     }
                                     if (kt)
@@ -82,30 +83,208 @@ namespace API_MVC.Controllers
                                         dynamic d1 = d.config[i].functionListName;
                                         while (j < d1.Count && !kt)
                                         {
-                                            if (d1.FunctionName.ToString().ToUpper() == functionName.ToUpper()) kt = true;
+                                            if (d1[j].FunctionName.ToString().ToUpper() == functionName.ToUpper()) kt = true;
                                             j = j + 1;
                                         }
                                         if (kt)
                                         {
+                                            dynamic dRequest = null;
+                                            StreamReader reader = new StreamReader(Request.Body );                                            
+                                            try
+                                            {
+                                                string content = await reader.ReadToEndAsync();
+                                                dRequest = JObject.Parse(content);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                dRequest = null;
+                                            }
                                             if (functionName.ToUpper() != "LOGIN")
                                             {
-                                                ClientToken = Request.Headers["Authorization"];
+                                                token = Request.Headers["Authorization"];
+                                                if (token == null) token = "";
                                                 try
                                                 {
-                                                    token = JsonConvert.DeserializeObject<dynamic>(ClientToken);
+                                                    // Check token
+                                                    TokenDTO objToken;
+                                                    bool IsValid = TokenHelper.CheckToken(token, out objToken);
                                                     // Thực hiện call nghiệp vụ với token nhận được
+                                                    if (!IsValid)
+                                                    {
+                                                        ResponseCode = -600;
+                                                        ResponseMessage = "Token không hợp lệ";
+                                                    }
+                                                    else
+                                                    {
+                                                        // Điều hướng nghiệp vụ
+                                                        switch (functionName.ToLower())
+                                                        {
+                                                            case "sendmail":
+                                                                string _SMTP = "smtp.gmail.com"; int _Port = 587; bool _IsSSL = true;
+                                                                string _AccountName = "Nguyen Van A"; string _EmailReceipt = "info@abc.com";
+                                                                string _AccountUser = "anv@abc.com"; string _AccountPassword = "abcPass";
+                                                                string[] _EmailTo = {"khach@cbd.com"}; string[] _EmailCC = { "sep1@abc.com" , "sep2@abc.com" };
+                                                                string[] _EmailBCC = { };
+                                                                string _Subject = "Test mail"; string _Content = "Test content";
+                                                                string[] _FileList = { };
+                                                                Send_Mail send_Mail = new Send_Mail(_SMTP, _Port, _IsSSL,
+                                                                _AccountName, _EmailReceipt, _AccountUser, _AccountPassword,
+                                                                _EmailTo, _EmailCC, _EmailBCC,
+                                                                _Subject, _Content, _FileList);
+                                                                bool IsSended = await send_Mail.EmailSendingAsync();
+                                                                if (IsSended)
+                                                                {
+                                                                    ResponseCode = 1;
+                                                                    ResponseMessage = string.Format("Gửi email từ API thành công");
+                                                                    Data = "";
+                                                                    httpStatusCode = 200;
+                                                                }
+                                                                else
+                                                                {
+                                                                    ResponseCode = -600;
+                                                                    ResponseMessage = string.Format("Gửi email từ API thất bại");
+                                                                    Data = "";
+                                                                }
+                                                                break;
+                                                            default:
+                                                                // Create param store proceduce
+                                                                List<string> arStoreName = new List<string>();
+                                                                Dictionary<string, object> paramObj = new Dictionary<string, object>();
+                                                                arStoreName.Add(functionName.ToLower());
+                                                                arStoreName.Add(StoreName.ToLower());
+                                                                dynamic d2 = d1[j].ParamIn;
+                                                                for (var l = 0; l < d2.Count; l++)
+                                                                {
+                                                                    string a = ""; string b = "";
+                                                                    a = d2[l].LocalName.ToString();
+                                                                    if (dRequest != null)
+                                                                    {
+                                                                        if (dRequest[d2[l].ParamName.ToString()] != null)
+                                                                        {
+                                                                            b = dRequest[d2[l].ParamName.ToString()].ToString();
+                                                                        }
+                                                                    }
+                                                                    // IsHidden = 1
+                                                                    if (d2[l].IsHidden.ToString() == "1")
+                                                                    {
+                                                                        // Username
+                                                                        if ((a.ToUpper() == "P_USERNAME") && (objToken != null))
+                                                                        {
+                                                                            b = objToken.Username;
+                                                                        }
+                                                                    }
+                                                                    paramObj.Add(a, b);
+                                                                }
+                                                                d2 = d1[j].ParamOut;
+                                                                for (var l = 0; l < d2.Count; l++)
+                                                                {
+                                                                    string a = ""; string b = "";
+                                                                    a = d2[l].LocalName.ToString();
+                                                                    b = d2[l].LocalValue.ToString();
+                                                                    paramObj.Add(a, b);
+                                                                }
+                                                                // Call store with Param
+                                                                break;
+                                                        }
+                                                        ResponseCode = 1;
+                                                        ResponseMessage = string.Format("Truy vấn API thành công");
+                                                        Data = "";
+                                                        httpStatusCode = 200;
+                                                    }
                                                 }
                                                 catch (Exception ex)
                                                 {
                                                     ResponseCode = -600;
-                                                    ResponseMessage = "Token không hợp lệ";
-                                                    kt = false;
+                                                    ResponseMessage = string.Format ("Token không hợp lệ: {0}", ex.ToString ());
                                                 }
                                             }
                                             else
                                             {
                                                 // Thực hiện call Login
-                                                token = null;
+                                                if (dRequest == null)
+                                                {
+                                                    ResponseCode = -600;
+                                                    ResponseMessage = "Hệ thống không nhận được request Data";
+                                                }
+                                                else
+                                                {
+                                                    try
+                                                    {
+                                                        bool isValid;
+                                                        switch (int.Parse(dRequest.Provider.ToString()))
+                                                        {
+                                                            case 2: // Login Email
+                                                                string smtp = "mail.abc.com"; int port = 587;
+                                                                string Email = dRequest.UserName.ToString(); string UserPassword = dRequest.Password.ToString();
+                                                                isValid = await Utils.EmailValidateAsync(smtp, port, Email, UserPassword);
+                                                                break;
+                                                            case 3: // Login LDAP
+                                                                Email = dRequest.UserName.ToString(); UserPassword = dRequest.Password.ToString();
+                                                                string LdapURL = "LDAP://abc.com"; string LDAPDomain = "abc.com"; string LDAPBaseDN = "//ldap://abc.com/path";
+                                                                LDAP m = new LDAP(LdapURL, LDAPDomain, LDAPBaseDN, 0, Email, UserPassword); // 0 - ContextType.Machine
+                                                                isValid = await m.ValidateUserAsync();
+                                                                break;
+                                                            default: // Login bang store proceduce
+                                                                // Create param store proceduce
+                                                                List<string> arStoreName = new List<string>();
+                                                                Dictionary<string, object> paramObj = new Dictionary<string, object>();
+                                                                arStoreName.Add(functionName.ToLower());
+                                                                arStoreName.Add(StoreName.ToLower());
+                                                                dynamic d2 = d1[j].ParamIn;
+                                                                for (var l = 0; l < d2.Count; l++)
+                                                                {
+                                                                    string a = ""; string b = "";
+                                                                    a = d2[l].LocalName.ToString();
+                                                                    if (dRequest != null)
+                                                                    {
+                                                                        if (dRequest[d2[l].ParamName.ToString()] != null)
+                                                                        {
+                                                                            b = dRequest[d2[l].ParamName.ToString()].ToString();
+                                                                        }
+                                                                    }
+                                                                    // Encrypt Password
+                                                                    //if(a.ToUpper == "P_PASSWORD")
+                                                                    //{
+                                                                    //    using (encry = new EncryptData)
+                                                                    //    {
+                                                                    //        b = encry.EncryptString(b)
+                                                                    //    }
+                                                                    //}
+                                                                    paramObj.Add(a, b);
+                                                                }
+                                                                d2 = d1[j].ParamOut;
+                                                                for (var l = 0; l < d2.Count; l++)
+                                                                {
+                                                                    string a = ""; string b = "";
+                                                                    a = d2[l].LocalName.ToString();
+                                                                    b = d2[l].LocalValue.ToString();
+                                                                    paramObj.Add(a, b);
+                                                                }
+                                                                // Call store with Param
+                                                                isValid = true;
+                                                                break;
+                                                        }
+                                                        if (!isValid)
+                                                        {
+                                                            ResponseCode = -600;
+                                                            ResponseMessage = "Login không thành công";
+                                                            httpStatusCode = 200;
+                                                        }
+                                                        else
+                                                        {
+                                                            ResponseCode = 1;
+                                                            ResponseMessage = "Login thành công";
+                                                            httpStatusCode = 200;
+                                                            token = TokenHelper.GenerateToken(dRequest["DeviceID"].ToString(), dRequest["UserName"].ToString());
+                                                            Data = string.Format (",\"Token\":\"{0}\"", token);
+                                                        }
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        ResponseCode = -600;
+                                                        ResponseMessage = string.Format("Login không thành công {0}", ex.ToString());
+                                                    }                                                    
+                                                }
                                             }
                                         }
                                         else
@@ -124,20 +303,24 @@ namespace API_MVC.Controllers
                         }
                     }
                 }
-                taskReturn = httpStatusCode.ToString () + "^{\"Status\": " + ResponseCode + ", \"Message\": \"" + ResponseMessage + "\", \"Data\": " + Data + "}";
+                Utils.WriteLogAsync(string.Format("ResponseCode: {0}, ResponseMessage: {1}", ResponseCode, ResponseMessage));
+                taskReturn = httpStatusCode.ToString () + "^{\"Status\": " + ResponseCode + ", \"Message\": \"" + ResponseMessage + "\"" + Data + "}";
                 return taskReturn; 
             });
             string[] a = task.Split(new string[] { "^" }, StringSplitOptions.None);
             int _StatusCode = int.Parse(a[0]);
+            dynamic  r = JObject.Parse(a[1]);
             if (_StatusCode == 200)
             {
-                return Json(JObject.Parse(a[1]));
+                //return Json(a[1]);
+                return new ContentResult { Content = a[1], ContentType = "application/json" };
             }
             else
             {
                 return StatusCode (_StatusCode);
             }            
         }
+
         private dynamic GetConfig() {
             dynamic d = null;
             try
@@ -153,7 +336,7 @@ namespace API_MVC.Controllers
             }
             catch (Exception ex)
             {
-                WriteLog(ex.ToString());
+                Utils.WriteLogAsync(ex.ToString());
             }
             return d;
         }
@@ -163,29 +346,6 @@ namespace API_MVC.Controllers
             if (Key == "keylist") return;
             //SetListKeyAdd(Key);
             _cache.Set(Key, Data, DateTime.Now.AddSeconds(iTime));
-        }
-
-        private void WriteLog(string Msg)
-        {
-            DateTime d = DateTime.Now;
-            string filePath = Directory.GetCurrentDirectory() + @"\Logs\API\Mobile";
-            if(!Directory.Exists (filePath))
-            {
-                Directory.CreateDirectory(filePath);
-            }
-            filePath = filePath + @"\log_" + d.ToString("yyyyMMddHHmm").Substring(0, 11) + @".log";
-            using (FileStream fs = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
-            {
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    sw.Write(Environment.NewLine);
-                    sw.Write("Log Entry {0} {1}: ", d.ToLongTimeString(), d.ToLongDateString());
-                    sw.Write(Environment.NewLine);
-                    sw.Write(Msg);
-                    sw.Close();
-                }
-                fs.Close();
-            }
         }
     }
 }
