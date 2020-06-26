@@ -121,9 +121,9 @@ namespace API_MVC.Controllers
                                                         {
                                                             case "sendmail":
                                                                 string _SMTP = "smtp.gmail.com"; int _Port = 587; bool _IsSSL = true;
-                                                                string _AccountName = "Nguyen Van A"; string _EmailReceipt = "info@abc.com";
-                                                                string _AccountUser = "anv@abc.com"; string _AccountPassword = "abcPass";
-                                                                string[] _EmailTo = {"khach@cbd.com"}; string[] _EmailCC = { "sep1@abc.com" , "sep2@abc.com" };
+                                                                string _AccountName = "Nguyen Van A"; string _EmailReceipt = "cskh@abc.com";
+                                                                string _AccountUser = "cskh@abc.com"; string _AccountPassword = "sfdsfsd";
+                                                                string[] _EmailTo = {"khach@dcb.com"}; string[] _EmailCC = { "sep1@abc.com" , "sep2@abc.com" };
                                                                 string[] _EmailBCC = { };
                                                                 string _Subject = "Test mail"; string _Content = "Test content";
                                                                 string[] _FileList = { };

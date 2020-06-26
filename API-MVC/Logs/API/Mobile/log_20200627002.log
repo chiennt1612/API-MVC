@@ -1,0 +1,34 @@
+
+
+Log Entry 12:20:27 AM Saturday, June 27, 2020: 
+ResponseCode: -600, ResponseMessage: Login không thành công
+
+Log Entry 12:22:08 AM Saturday, June 27, 2020: 
+ResponseCode: 1, ResponseMessage: Login thành công
+
+Log Entry 12:22:14 AM Saturday, June 27, 2020: 
+ResponseCode: 1, ResponseMessage: Login thành công
+
+Log Entry 12:25:27 AM Saturday, June 27, 2020: 
+Start mail [Test mail] processing!
+
+Log Entry 12:25:32 AM Saturday, June 27, 2020: 
+Send [Subject: Test mail Content: Test content]
+
+Log Entry 12:25:32 AM Saturday, June 27, 2020: 
+Send [From: cskh@nuocngoctuan.com Name: Nguyen Van A]
+
+Log Entry 12:25:32 AM Saturday, June 27, 2020: 
+Sender [EmailReceipt: cskh@nuocngoctuan.com AccountName: Nguyen Van A]
+
+Log Entry 12:25:35 AM Saturday, June 27, 2020: 
+Sendmail [Subject: Test mail] Add mail-to:chien.nguyenthanh@gmail.com
+
+Log Entry 12:25:38 AM Saturday, June 27, 2020: 
+Sendmail [Subject: Test mail] Add mail-cc:sep1@abc.com
+
+Log Entry 12:25:51 AM Saturday, June 27, 2020: 
+Sendmail [Subject: Test mail] OK
+
+Log Entry 12:25:58 AM Saturday, June 27, 2020: 
+ResponseCode: 1, ResponseMessage: Truy vấn API thành công
